@@ -25,7 +25,7 @@ def get_linkedin_urn():
 def generate_tech_post():
     """Generates the weekly LinkedIn post using Gemini 1.5 Flash"""
     # Use the flash model (fastest and free)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro')
 
     prompt = (
         "You are Azm, a skilled Software Developer. Your communication style is professional, "
