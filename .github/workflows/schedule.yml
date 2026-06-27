@@ -1,0 +1,32 @@
+name: Weekly LinkedIn Tech Post
+
+on:
+  schedule:
+    # Runs at 10:00 AM UTC every Tuesday
+    # (Adjust the '10' if your local timezone requires it!)
+    - cron: '0 10 * * 2'
+
+  # This allows you to click a button in GitHub to run it manually for testing!
+  workflow_dispatch:
+
+jobs:
+  post-to-linkedin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Automation Script
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python main.py
