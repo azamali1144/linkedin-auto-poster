@@ -1,13 +1,13 @@
 import os
 import requests
-from openai import OpenAI
+import google.generativeai as genai
 
 # 1. Load Secrets
 LINKEDIN_ACCESS_TOKEN = os.environ.get("LINKEDIN_ACCESS_TOKEN")
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# Initialize OpenAI Client
-client = OpenAI(api_key=OPENAI_API_KEY)
+# Initialize Gemini Client
+genai.configure(api_key=GEMINI_API_KEY)
 
 
 def get_linkedin_urn():
@@ -19,32 +19,25 @@ def get_linkedin_urn():
     if response.status_code != 200:
         raise Exception(f"Failed to fetch URN: {response.text}")
 
-    # The 'sub' field contains your URN
     return response.json()['sub']
 
 
 def generate_tech_post():
-    """Generates the weekly LinkedIn post using GPT-4o"""
-    system_prompt = (
-        "You are Azm, a skilled Software Developer. Your communication style is professional, "
-        "insightful, yet approachable. You write for other engineers and tech enthusiasts."
-    )
+    """Generates the weekly LinkedIn post using Gemini 1.5 Flash"""
+    # Use the flash model (fastest and free)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
-    user_prompt = (
+    prompt = (
+        "You are Azm, a skilled Software Developer. Your communication style is professional, "
+        "insightful, yet approachable. You write for other engineers and tech enthusiasts.\n\n"
         "Write a 150-word LinkedIn post about a current, modern software development topic "
         "(e.g., Clean Code, API design, Cloud Architecture, or AI in dev tools). "
         "Include one specific technical insight, ask a question at the end to drive engagement, "
         "and include 3 relevant hashtags. Do NOT use emojis excessively. Format it cleanly with line breaks."
     )
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-    )
-    return response.choices[0].message.content
+    response = model.generate_content(prompt)
+    return response.text.strip()
 
 
 def post_to_linkedin(content, user_urn):
@@ -76,7 +69,8 @@ def post_to_linkedin(content, user_urn):
 
 
 if __name__ == "__main__":
-    print("Starting LinkedIn Automation...")
+    print("Starting LinkedIn Automation (Gemini Edition)...")
+
     urn = get_linkedin_urn()
     print(f"Found User URN: {urn}")
 
