@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import urllib.parse
 import google.generativeai as genai
 
 # 1. Load Secrets
@@ -38,9 +39,18 @@ def generate_content():
 
     Write two things for me in strict JSON format:
 
-    1. "main_post": A highly professional, 150-200 word educational LinkedIn post. Randomly focus deeply on ONLY ONE of the core consulting services listed above. Explain a complex technical concept or architecture pattern, but immediately tie it to actual business value (e.g., saving money, scaling effortlessly, automating hundreds of hours, improving decision-making). Do not sound like a junior developer; sound like a seasoned CTO/Architect. Include 3-4 relevant hashtags.
+    1. "main_post": A highly engaging, visually appealing 150-200 word educational LinkedIn post. 
+    Randomly focus deeply on ONLY ONE of the core consulting services listed above. 
 
-    2. "first_comment": A short, confident comment (2-3 sentences) acting as a Call to Action (CTA). Mention your 10+ years of experience and state that you are open for contract/freelance work to help businesses build scalable infrastructure or integrate Agentic AI into their systems. Tell them to DM you to discuss their project.
+    CRITICAL FORMATTING RULES FOR main_post:
+    - Start with a strong, attention-grabbing hook in the first line.
+    - Use plenty of vertical spacing (insert blank lines/newlines between every concept).
+    - Use emojis strategically but professionally (e.g., 🚀, 💡, ⚙️, 📊).
+    - Use bullet points (•) for key takeaways or technical benefits.
+    - DO NOT write a giant block of text. Break it up so it is easy to read on mobile.
+    - End with 3-4 relevant hashtags.
+
+    2. "first_comment": A short, confident comment (2-3 sentences) acting as a Call to Action (CTA). Mention your 10+ years of experience and state that you are open for contract/freelance work to help businesses build scalable infrastructure or integrate Agentic AI into their systems. Tell them to DM you to discuss their project. Include 1-2 emojis.
 
     Return ONLY valid JSON in this exact structure, with no markdown formatting around it:
     {
@@ -91,7 +101,11 @@ def post_to_linkedin(content, user_urn):
 
 def add_first_comment(post_urn, comment_text, user_urn):
     """Adds a comment to the post we just created"""
-    url = f"https://api.linkedin.com/v2/socialActions/{post_urn}/comments"
+
+    # FIX: We must URL-encode the URN because it contains colons (:) which breaks the URL path
+    encoded_post_urn = urllib.parse.quote(post_urn)
+
+    url = f"https://api.linkedin.com/v2/socialActions/{encoded_post_urn}/comments"
     headers = {
         'Authorization': f'Bearer {LINKEDIN_ACCESS_TOKEN}',
         'X-Restli-Protocol-Version': '2.0.0',
