@@ -1,32 +1,38 @@
-name: Weekly LinkedIn Tech Post
+yaml
+name: LinkedIn Agentic Poster
 
 on:
   schedule:
-    # Runs at 10:00 AM UTC every Tuesday
-    # (Adjust the '10' if your local timezone requires it!)
-    - cron: '0 10 * * 2'
-
-  # This allows you to click a button in GitHub to run it manually for testing!
-  workflow_dispatch:
+    # Run every hour, at the start of the hour
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allow manual run
 
 jobs:
-  post-to-linkedin:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Automation Script
+      - name: Run Poster
         env:
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python main.py
+        run: python auto_poster.py
+
+      # IMPORTANT: This step saves the 'state.json' so the next run knows when you last posted
+      - name: Commit state
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add state.json
+          git commit -m "Update posting state" || exit 0
+          git push
